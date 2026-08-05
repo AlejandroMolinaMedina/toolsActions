@@ -1,0 +1,112 @@
+name: 'Gemini Auto Update README'
+description: 'Genera y actualiza automáticamente el README.md usando Gemini AI y abre un PR'
+inputs:
+  gemini_api_key:
+    description: 'API Key de Google Gemini'
+    required: true
+  gemini_model:
+    description: 'Modelo de Gemini a utilizar'
+    required: true
+  prompt_url:
+    description: 'URL raw del prompt'
+    required: true
+  repo_slug:
+    description: 'Repositorio objetivo (owner/repo)'
+    required: false
+    default: ${{ github.repository }}
+  target_branch:
+    description: 'Rama base para el PR'
+    required: false
+    default: 'master'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Generate Context & Query Gemini
+      shell: bash
+      env:
+        GEMINI_API_KEY: ${{ inputs.gemini_api_key }}
+        GEMINI_MODEL: ${{ inputs.gemini_model }}
+        PROMPT_URL: ${{ inputs.prompt_url }}
+        NODE_PATH: /usr/local/lib/node_modules
+      run: |
+        git diff HEAD~1 HEAD > changes.txt 2>/dev/null || echo "Initial commit or no diff" > changes.txt
+        find . -maxdepth 3 -not -path '*/.*' > structure.txt
+
+        curl -sSL "$PROMPT_URL" -o remote-prompt.md
+
+        node -e '
+          const fs = require("fs");
+          const { GoogleGenAI } = require("@google/genai");
+
+          const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+          const changes = fs.existsSync("changes.txt") ? fs.readFileSync("changes.txt", "utf8") : "";
+          const structure = fs.existsSync("structure.txt") ? fs.readFileSync("structure.txt", "utf8") : "";
+          const currentReadme = fs.existsSync("README.md") ? fs.readFileSync("README.md", "utf8") : "";
+
+          if (!fs.existsSync("remote-prompt.md")) {
+            console.error("Error: No se pudo descargar el archivo de prompt.");
+            process.exit(1);
+          }
+
+          let promptTemplate = fs.readFileSync("remote-prompt.md", "utf8");
+
+          const finalPrompt = promptTemplate
+            .replace("{{CHANGES}}", changes)
+            .replace("{{STRUCTURE}}", structure)
+            .replace("{{CURRENT_README}}", currentReadme);
+
+          async function main() {
+            const response = await ai.models.generateContent({
+              model: process.env.GEMINI_MODEL,
+              contents: finalPrompt,
+            });
+
+            let markdown = response.text.trim();
+            markdown = markdown.replace(/^```(markdown)?\n/i, "").replace(/\n```$/i, "");
+
+            fs.writeFileSync("README.md", markdown.trim());
+            console.log(`README.md generado con éxito usando el modelo ${process.env.GEMINI_MODEL}.`);
+          }
+
+          main().catch(err => {
+            console.error("Error al generar el contenido:", err);
+            process.exit(1);
+          });
+        '
+
+    - name: Create Branch, Push and Open PR
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        REPO_SLUG: ${{ inputs.repo_slug }}
+        TARGET_BRANCH: ${{ inputs.target_branch }}
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        
+        if [ -n "$(git status --porcelain README.md)" ]; then
+          which gh >/dev/null 2>&1 || apk add --no-cache github-cli
+
+          BRANCH_NAME="docs/auto-update-readme-$(date +%s)"
+          git checkout -b "$BRANCH_NAME"
+
+          git add README.md
+          git commit -m "docs: auto-update README.md via Gemini AI"
+
+          git remote remove origin 2>/dev/null || true
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${REPO_SLUG}.git"
+
+          git push -u origin "$BRANCH_NAME"
+
+          if [ -n "$GITHUB_TOKEN" ]; then
+            gh pr create \
+              --title "docs: Actualización automática del README.md con Gemini" \
+              --body "Este Pull Request fue generado automáticamente por Gemini AI para reflejar los cambios recientes en la estructura del proyecto." \
+              --base "$TARGET_BRANCH" \
+              --head "$BRANCH_NAME" || echo "Aviso: No se pudo crear el PR por GraphQL (esperado si pruebas con 'act' localmente)."
+          fi
+        else
+          echo "No hay cambios necesarios en el README.md"
+        fi
