@@ -5,7 +5,7 @@ Este repositorio centraliza **GitHub Composite Actions** utilizadas para estanda
 ## Estructura del Repositorio
 
 * `getData`: Extrae información del contexto de Git y del repositorio.
-* `n8n/notify`: Una acción genérica para enviar webhooks JSON dinámicos.
+* `webhook/notify`: Una acción genérica para enviar webhooks JSON dinámicos.
 
 ## Uso General
 
