@@ -79,7 +79,7 @@ runs:
     - name: Create Branch, Push and Open PR
       shell: bash
       env:
-        GITHUB_TOKEN: ${{ github.token }}
+        GITHUB_TOKEN: ${{ inputs.github_token || github.token }}
         REPO_SLUG: ${{ inputs.repo_slug }}
         TARGET_BRANCH: ${{ inputs.target_branch }}
       run: |
@@ -95,8 +95,11 @@ runs:
           git add README.md
           git commit -m "docs: auto-update README.md via Gemini AI"
 
+          # Limpiar cualquier residuo de SSH / URL malformada
+          CLEAN_SLUG=$(echo "$REPO_SLUG" | sed -E 's/.*github\.com[:\/]//; s/\.git$//; s/^git@[^:]+://')
+
           git remote remove origin 2>/dev/null || true
-          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${REPO_SLUG}.git"
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${CLEAN_SLUG}.git"
 
           git push -u origin "$BRANCH_NAME"
 
