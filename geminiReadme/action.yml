@@ -83,6 +83,10 @@ runs:
         REPO_SLUG: ${{ inputs.repo_slug }}
         TARGET_BRANCH: ${{ inputs.target_branch }}
       run: |
+        # 1. Marcar el directorio como seguro para evitar el error "dubious ownership"
+        git config --global --add safe.directory "*"
+
+        # 2. Configurar usuario de Git
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         
@@ -95,7 +99,6 @@ runs:
           git add README.md
           git commit -m "docs: auto-update README.md via Gemini AI"
 
-          # Limpiar cualquier residuo de SSH / URL malformada
           CLEAN_SLUG=$(echo "$REPO_SLUG" | sed -E 's/.*github\.com[:\/]//; s/\.git$//; s/^git@[^:]+://')
 
           git remote remove origin 2>/dev/null || true
@@ -108,7 +111,7 @@ runs:
               --title "docs: Actualización automática del README.md con Gemini" \
               --body "Este Pull Request fue generado automáticamente por Gemini AI para reflejar los cambios recientes en la estructura del proyecto." \
               --base "$TARGET_BRANCH" \
-              --head "$BRANCH_NAME" || echo "Aviso: No se pudo crear el PR por GraphQL (esperado si pruebas con 'act' localmente)."
+              --head "$BRANCH_NAME"
           fi
         else
           echo "No hay cambios necesarios en el README.md"
