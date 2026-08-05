@@ -1,15 +1,15 @@
-# 🙻 Alexmm14 Tools Actions
+# Alexmm14 Tools Actions
 
-Este repositorio centraliza las **GitHub Composite Actions** utilizadas para estandarizar el flujo de trabajo en múltiples proyectos.
+Este repositorio centraliza **GitHub Composite Actions** utilizadas para estandarizar flujos de trabajo en múltiples proyectos.
 
-## 𝐃 Estructura del Repositorio
+## Estructura del Repositorio
 
-* **/getData**: Extrae información del contexto de Git y del repositorio.
-* **/notify-n8n**: Acción genérica para enviar webhooks JSON dinámicos.
+* `getData`: Extrae información del contexto de Git y del repositorio.
+* `n8n/notify`: Una acción genérica para enviar webhooks JSON dinámicos.
 
-## 🚀 Uso General
+## Uso General
 
-Para utilizar cualquiera de estas acciones, es requerido incluir el paso de checkout con hetch-depth: 0:
+Para utilizar cualquiera de estas acciones, es necesario incluir el paso de checkout con `fetch-depth: 0`:
 
 ```yaml
 steps:

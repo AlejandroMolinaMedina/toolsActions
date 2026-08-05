@@ -1,14 +1,14 @@
-# �Get Data Action
+# Acción Get Data
 
-Esta acción procesa la información del commit actual y el repositorio para generar outputs para tus workflows.
+Esta acción procesa información del commit actual y del repositorio para generar salidas (outputs) para tus flujos de trabajo.
 
-## ❤ Inputs
+## Inputs
 
-| Nombre | Descripciún | Requerido |
+| Nombre | Descripción | Requerido |
 | :--- | :--- | :--- |
 | `docker_digest` | Hash de la imagen generada. | No |
 
-## 💔 Ejemplo de uso
+## Ejemplo de uso
 
 ```yaml
 - name: Extraer Variables
