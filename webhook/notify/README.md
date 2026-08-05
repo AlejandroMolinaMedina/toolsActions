@@ -1,6 +1,6 @@
 # Acción Webhook Sender (Genérica)
 
-Envía cualquier objeto JSON a cualquier endpoint de Webhook compatible. Aunque el nombre de la carpeta sugiere n8n, la acción es totalmente agnóstica respecto al destino.
+Envía cualquier objeto JSON a cualquier endpoint de Webhook compatible.
 
 ## Inputs
 
@@ -13,7 +13,7 @@ Envía cualquier objeto JSON a cualquier endpoint de Webhook compatible. Aunque 
 
 ```yaml
 - name: Enviar Webhook
-  uses: Alexmm14/toolsActions/notify-n8n@master
+  uses: Alexmm14/toolsActions/webhook/notify@master
   with:
     endpoint: ${{ secrets.WEBHOOK_URL }}
     json_body: |
