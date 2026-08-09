@@ -36,17 +36,58 @@ runs:
         curl -sSL "$PROMPT_URL" -o remote-prompt.md
 
         node -e '
-          console.log("Iniciando script simplificado...");
-          try {
-            const { GoogleGenAI } = require("@google/genai");
-            console.log("GoogleGenAI importado:", typeof GoogleGenAI);
-            const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-            console.log("Cliente inicializado");
-            process.exit(0);
-          } catch (err) {
-            console.error("Error durante inicialización:", err);
+          const fs = require("fs");
+          const { GoogleGenAI } = require("@google/genai");
+
+          const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+          const changes = fs.existsSync("changes.txt") ? fs.readFileSync("changes.txt", "utf8") : "";
+          const structure = fs.existsSync("structure.txt") ? fs.readFileSync("structure.txt", "utf8") : "";
+          const currentReadme = fs.existsSync("README.md") ? fs.readFileSync("README.md", "utf8") : "";
+
+          if (!fs.existsSync("remote-prompt.md")) {
+            console.error("Error: No se pudo descargar el archivo de prompt.");
             process.exit(1);
           }
+
+          let promptTemplate = fs.readFileSync("remote-prompt.md", "utf8");
+
+          const finalPrompt = promptTemplate
+            .replace("{{CHANGES}}", changes)
+            .replace("{{STRUCTURE}}", structure)
+            .replace("{{CURRENT_README}}", currentReadme);
+
+          async function main() {
+            const response = await ai.models.generateContent({
+              model: process.env.GEMINI_MODEL,
+              contents: finalPrompt,
+            });
+
+            if (!response.candidates || response.candidates.length === 0 || !response.candidates[0].content || !response.candidates[0].content.parts || response.candidates[0].content.parts.length === 0) {
+              console.error("Respuesta inesperada de la API:", JSON.stringify(response, null, 2));
+              process.exit(1);
+            }
+
+            const fullResponse = response.candidates[0].content.parts[0].text.trim();
+            const firstNewlineIndex = fullResponse.indexOf("\n");
+            const decision = (firstNewlineIndex !== -1 ? fullResponse.substring(0, firstNewlineIndex) : fullResponse).trim().toLowerCase();
+            
+            if (decision === "false") {
+              console.log(fullResponse);
+              process.exit(0);
+            }
+            
+            let markdown = firstNewlineIndex !== -1 ? fullResponse.substring(firstNewlineIndex + 1).trim() : fullResponse.trim();
+            markdown = markdown.replace(/^```(markdown)?\n/i, "").replace(/\n```$/i, "");
+
+            fs.writeFileSync("README.md", markdown.trim());
+            console.log(`README.md generado con éxito usando el modelo ${process.env.GEMINI_MODEL}.`);
+          }
+
+          main().catch(err => {
+            console.error("Error al generar el contenido:", err);
+            process.exit(1);
+          });
         '
 
     - name: Create Branch, Push and Open PR
