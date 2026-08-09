@@ -63,6 +63,11 @@ runs:
               contents: finalPrompt,
             });
 
+            if (!response.candidates || response.candidates.length === 0 || !response.candidates[0].content || !response.candidates[0].content.parts || response.candidates[0].content.parts.length === 0) {
+              console.error("Respuesta inesperada de la API:", JSON.stringify(response, null, 2));
+              process.exit(1);
+            }
+
             const fullResponse = response.candidates[0].content.parts[0].text.trim();
             const firstNewlineIndex = fullResponse.indexOf('\n');
             const decision = (firstNewlineIndex !== -1 ? fullResponse.substring(0, firstNewlineIndex) : fullResponse).trim().toLowerCase();
