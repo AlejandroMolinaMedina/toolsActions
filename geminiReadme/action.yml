@@ -63,7 +63,16 @@ runs:
               contents: finalPrompt,
             });
 
-            let markdown = response.text.trim();
+            const fullResponse = response.text.trim();
+            const firstNewlineIndex = fullResponse.indexOf('\n');
+            const decision = (firstNewlineIndex !== -1 ? fullResponse.substring(0, firstNewlineIndex) : fullResponse).trim().toLowerCase();
+            
+            if (decision === 'false') {
+              console.log(fullResponse);
+              process.exit(0);
+            }
+            
+            let markdown = firstNewlineIndex !== -1 ? fullResponse.substring(firstNewlineIndex + 1).trim() : fullResponse.trim();
             markdown = markdown.replace(/^```(markdown)?\n/i, "").replace(/\n```$/i, "");
 
             fs.writeFileSync("README.md", markdown.trim());
