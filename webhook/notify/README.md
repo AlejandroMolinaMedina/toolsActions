@@ -8,6 +8,7 @@ Envía cualquier objeto JSON a cualquier endpoint de Webhook compatible.
 | :--- | :--- | :--- |
 | `endpoint` | URL de destino del Webhook. | Sí |
 | `json_body` | Cuerpo completo del mensaje JSON. | Sí |
+| `track_usage` | Registrar la ejecución en el contador de uso (`true`/`false`). | No |
 
 ## Ejemplo de uso
 

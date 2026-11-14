@@ -8,10 +8,19 @@ inputs:
   json_body:
     description: 'El objeto JSON completo en formato string'
     required: true
+  track_usage:
+    description: 'Registrar la ejecución en el contador público de uso (true/false)'
+    required: false
+    default: 'true'
 
 runs:
   using: 'composite'
   steps:
+    - name: Registrar uso
+      if: inputs.track_usage == 'true'
+      shell: bash
+      run: curl -fsS -m 5 -o /dev/null "https://counter.driagonattack.com/hit/webhook-notify" || true
+
     - name: Send Payload
       shell: bash
       env:
