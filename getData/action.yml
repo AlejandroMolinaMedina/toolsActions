@@ -6,6 +6,10 @@ inputs:
     description: 'El digest de la imagen Docker (opcional)'
     required: false
     default: ''
+  track_usage:
+    description: 'Registrar la ejecución en el contador público de uso (true/false)'
+    required: false
+    default: 'true'
 
 outputs:
   pr_header:
@@ -30,6 +34,11 @@ outputs:
 runs:
   using: 'composite'
   steps:
+    - name: Registrar uso
+      if: inputs.track_usage == 'true'
+      shell: bash
+      run: curl -fsS -m 5 -o /dev/null "https://counter.driagonattack.com/hit/getData" || true
+
     - id: vars
       shell: bash
       run: |

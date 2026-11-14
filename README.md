@@ -22,6 +22,18 @@ Este repositorio centraliza **GitHub Composite Actions** diseñadas para estanda
 └── README.md             # Documentación principal
 ```
 
+## Contador de Uso
+
+Cada acción registra cuántas veces se ha ejecutado en cualquier pipeline:
+
+| Acción | Ejecuciones |
+|--------|-------------|
+| `getData` | ![getData](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fcounter.driagonattack.com%2Fget%2FgetData&query=%24.value&label=ejecuciones&color=blue) |
+| `webhook/notify` | ![webhook/notify](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fcounter.driagonattack.com%2Fget%2Fwebhook-notify&query=%24.value&label=ejecuciones&color=blue) |
+| `geminiReadme` | ![geminiReadme](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fcounter.driagonattack.com%2Fget%2FgeminiReadme&query=%24.value&label=ejecuciones&color=blue) |
+
+El registro es un `curl` silencioso al inicio de cada acción (timeout de 5 s, nunca hace fallar el pipeline). Para desactivarlo en un workflow, pasa `track_usage: 'false'` en el `with:` de la acción.
+
 ## Guía de Inicio Rápido
 
 Para utilizar estas acciones, es necesario realizar un `checkout` con profundidad completa en tus workflows para asegurar que el contexto del repositorio esté disponible.

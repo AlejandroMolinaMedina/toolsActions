@@ -18,6 +18,7 @@ Una GitHub Action inteligente que mantiene tu `README.md` actualizado automátic
 | `prompt_url` | URL (raw) hacia el archivo `.md` del prompt de sistema. | Sí | - |
 | `repo_slug` | Repositorio a analizar (owner/repo). | No | `${{ github.repository }}` |
 | `target_branch` | Rama base para crear el Pull Request. | No | `main` |
+| `track_usage` | Registrar la ejecución en el contador de uso. | No | `true` |
 
 ## 📝 Requerimientos del Prompt
 

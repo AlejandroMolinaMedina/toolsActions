@@ -7,6 +7,7 @@ Esta acción procesa información del commit actual y del repositorio para gener
 | Nombre | Descripción | Requerido |
 | :--- | :--- | :--- |
 | `docker_digest` | Hash de la imagen generada. | No |
+| `track_usage` | Registrar la ejecución en el contador de uso (`true`/`false`). | No |
 
 ## Ejemplo de uso
 
